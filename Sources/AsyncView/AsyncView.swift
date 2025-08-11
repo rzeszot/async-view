@@ -31,6 +31,10 @@ public struct AsyncView<
     }
 
     public var body: some View {
+        let action = RefreshAction {
+            phase = .pending
+        }
+
         switch phase {
         case .pending:
             loading()
@@ -47,13 +51,10 @@ public struct AsyncView<
                 }
         case let .success(value):
             content(value)
+                .environment(\.refreshAction, action)
         case let .failure(error):
-            let action = RetryAction {
-                phase = .pending
-            }
-
             failure(error)
-                .environment(\.retryAction, action)
+                .environment(\.refreshAction, action)
         }
     }
 }
@@ -61,18 +62,28 @@ public struct AsyncView<
 #Preview("retry") {
     AsyncView(options: []) {
         try await Task.sleep(for: .seconds(2))
-        throw CancellationError()
-        return 42
+        if Bool.random() {
+            throw CancellationError()
+        } else {
+            return 42
+        }
     } content: { value in
-        Text("success \(value)")
+        RefreshActionReader { refresh in
+            VStack {
+                Text("Success \(value)")
+                Button("Refresh") {
+                    refresh()
+                }
+            }
+        }
     } loading: {
         ProgressView()
     } failure: { error in
-        RetryActionReader { retry in
+        RefreshActionReader { refresh in
             VStack {
                 Text("Failure \(String(describing: error))")
-                Button("Retry") {
-                    retry()
+                Button("Refresh") {
+                    refresh()
                 }
             }
         }

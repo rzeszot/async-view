@@ -1,6 +1,6 @@
 import SwiftUI
 
-@MainActor public struct RetryAction: Sendable {
+@MainActor public struct RefreshAction: Sendable {
     let handler: @MainActor () -> Void
 
     public func callAsFunction() {
@@ -9,5 +9,5 @@ import SwiftUI
 }
 
 public extension EnvironmentValues {
-    @Entry var retryAction: RetryAction = .init {}
+    @Entry var refreshAction: RefreshAction = .init {}
 }
