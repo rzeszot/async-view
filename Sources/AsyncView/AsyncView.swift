@@ -37,18 +37,20 @@ public struct AsyncView<
 
         switch phase {
         case .pending:
-            loading()
-                .onAppear {
-                    task = Task {
-                        phase = await Phase(operation: operation)
-                    }
+            ZStack {
+                loading()
+            }
+            .onAppear {
+                task = Task {
+                    phase = await Phase(operation: operation)
                 }
-                .onDisappear {
-                    if options.contains(.autocancel) {
-                        task?.cancel()
-                        task = nil
-                    }
+            }
+            .onDisappear {
+                if options.contains(.autocancel) {
+                    task?.cancel()
+                    task = nil
                 }
+            }
         case let .success(value):
             content(value)
                 .environment(\.refreshAction, action)
@@ -129,5 +131,18 @@ public struct AsyncView<
                 Text("failure \(String(describing: error))")
             }
         }
+    }
+}
+
+#Preview("loading-bug") {
+    AsyncView(options: []) {
+        try await Task.sleep(for: .seconds(5))
+        return 42
+    } content: { value in
+        Text("success \(value)")
+    } loading: {
+        EmptyView()
+    } failure: { error in
+        Text("failure \(String(describing: error))")
     }
 }
