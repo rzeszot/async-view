@@ -41,6 +41,7 @@ public struct AsyncView<
                 }
                 .onDisappear {
                     if options.contains(.autocancel) {
+                        task?.cancel()
                         task = nil
                     }
                 }
@@ -53,14 +54,22 @@ public struct AsyncView<
 }
 
 #Preview {
-    AsyncView {
-        try await Task.sleep(for: .seconds(5))
-        return 42
-    } content: { value in
-        Text("success \(value)")
-    } loading: {
-        ProgressView()
-    } failure: { error in
-        Text("failure \(String(describing: error))")
+    NavigationStack {
+        VStack {
+            NavigationLink("lorem") {
+                Text("lorem")
+            }
+            Divider()
+            AsyncView(options: []) {
+                try await Task.sleep(for: .seconds(5))
+                return 42
+            } content: { value in
+                Text("success \(value)")
+            } loading: {
+                ProgressView()
+            } failure: { error in
+                Text("failure \(String(describing: error))")
+            }
+        }
     }
 }
