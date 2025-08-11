@@ -48,12 +48,59 @@ public struct AsyncView<
         case let .success(value):
             content(value)
         case let .failure(error):
+            let action = RetryAction {
+                phase = .pending
+            }
+
             failure(error)
+                .environment(\.retryAction, action)
         }
     }
 }
 
-#Preview {
+#Preview("retry") {
+    AsyncView(options: []) {
+        try await Task.sleep(for: .seconds(2))
+        throw CancellationError()
+        return 42
+    } content: { value in
+        Text("success \(value)")
+    } loading: {
+        ProgressView()
+    } failure: { error in
+        RetryActionReader { retry in
+            VStack {
+                Text("Failure \(String(describing: error))")
+                Button("Retry") {
+                    retry()
+                }
+            }
+        }
+    }
+}
+
+#Preview("autocancel") {
+    NavigationStack {
+        VStack {
+            NavigationLink("lorem") {
+                Text("lorem")
+            }
+            Divider()
+            AsyncView(options: [.autocancel]) {
+                try await Task.sleep(for: .seconds(5))
+                return 42
+            } content: { value in
+                Text("success \(value)")
+            } loading: {
+                ProgressView()
+            } failure: { error in
+                Text("failure \(String(describing: error))")
+            }
+        }
+    }
+}
+
+#Preview("no-autocancel") {
     NavigationStack {
         VStack {
             NavigationLink("lorem") {
