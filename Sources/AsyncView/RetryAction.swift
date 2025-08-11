@@ -1,7 +1,6 @@
 import SwiftUI
 
-@MainActor
-public struct RetryAction: Sendable {
+@MainActor public struct RetryAction: Sendable {
     let handler: @MainActor () -> Void
 
     public func callAsFunction() {
