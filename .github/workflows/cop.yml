@@ -1,0 +1,21 @@
+name: Merge Cop
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  merge-cop:
+    name: Merge Cop
+    runs-on: macos-15
+    timeout-minutes: 1
+    concurrency:
+      group: ci-${{ github.workflow }}-${{ github.ref || github.head_ref }}-cop
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Cop
+        uses: rzeszot/merge-cop-action@main
