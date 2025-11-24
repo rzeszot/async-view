@@ -18,8 +18,7 @@ extension Phase: Equatable where Success: Equatable, Failure: Equatable {}
 extension Phase {
     init(operation: () async throws(Failure) -> Success) async {
         do throws(Failure) {
-            let value = try await operation()
-            self = .success(value)
+            self = try await .success(operation())
         } catch {
             self = .failure(error)
         }
